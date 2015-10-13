@@ -1,0 +1,32 @@
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    name: cloudsqlip
+  name: cloudsqlip
+spec:
+  replicas: 1
+  selector: 
+    name: cloudsqlip
+    version: v1
+  template:
+    metadata:
+      labels:
+        name: cloudsqlip
+        version: v1
+    spec:
+      containers:
+      - name: cloudsqlip
+        image: jordic/cloudsqlip:0.2
+        resources:
+          limits:
+            cpu: 10m
+            memory: 50Mi
+        command: 
+        - /main
+        - -db
+        - cloudsqldbserver
+        - -extra
+        - 10.10.20.114/32
+
