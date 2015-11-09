@@ -1,0 +1,9 @@
+
+
+Server:
+diod --export "/tmp/"  -n -f -l 0.0.0.0:5640
+
+
+Client:
+9mount -u -i -a/tmp/ 'tcp!localhost!5640' ./t
+
