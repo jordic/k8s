@@ -1,5 +1,5 @@
 
-=== NGiNx Service Proxy for Kubernetes
+=== NGiNx Service Proxy for Kubernetes ===
 
 A docker image, and a Kubernetes resource controller and service, for building
 a nginx proxy that proxies labeled services. 
