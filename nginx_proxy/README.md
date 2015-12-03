@@ -1,5 +1,5 @@
 
-=== NGiNx Service Proxy for Kubernetes ===
+### NGiNx Service Proxy for Kubernetes
 
 A docker image, and a Kubernetes resource controller and service, for building
 a nginx proxy that proxies labeled services. 
@@ -51,7 +51,7 @@ When done, will start the nginx proxy, with the available services.
 Requirements: You will need a cluster with the kube-dns service.
 
 
-==== Motivation ====
+#### Motivation
 
 The main motivation for building this image, is a simple use case to proxy
 some services that matches a label. I know there are plenty of other options,
@@ -68,7 +68,7 @@ go get -u github.com/jordic/k8s/nginx_proxy
 ```
 
 
-==== Improvements ====
+#### Improvements
 
 - Handle ssl termination on nginx-proxy. Actually, we have the SSL
     termination, at LB level.
