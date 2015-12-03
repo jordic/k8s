@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"time"
 
-	"github.com/golang/glog"
-	"github.com/prometheus/common/log"
-	"k8s.io/kubernetes/pkg/api"
-	kclient "k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
+	"github.com/jordic/k8s/cloudsqlip/Godeps/_workspace/src/k8s.io/kubernetes/pkg/api"
+	aclient "github.com/jordic/k8s/cloudsqlip/Godeps/_workspace/src/k8s.io/kubernetes/pkg/api/unversioned"
+	kclient "github.com/jordic/k8s/cloudsqlip/Godeps/_workspace/src/k8s.io/kubernetes/pkg/client/unversioned"
 )
 
 var (
@@ -32,7 +30,7 @@ func main() {
 	flag.Parse()
 
 	if *dbName == "" {
-		glog.Error("Must provide a dbinstance name")
+		log.Println("Must provide a dbinstance name")
 		os.Exit(1)
 	}
 
@@ -45,7 +43,7 @@ func main() {
 	} else {
 		cfg, err = kclient.InClusterConfig()
 		if err != nil {
-			glog.Errorf("failed to load config: %v", err)
+			log.Printf("failed to load config: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -66,12 +64,11 @@ func main() {
 // PollNodes polls for new nodes added to cluster
 func PollNodes() {
 
-	glog.Info("Polling node list")
-	nodes, err := client.Nodes().List(
-		labels.Everything(), fields.Everything())
+	log.Println("Polling node list")
+	nodes, err := client.Nodes().List(aclient.ListOptions{})
 
 	if err != nil {
-		glog.Errorf("failed to get node list %v", err)
+		log.Printf("failed to get node list %v", err)
 	}
 	var tnodes []string
 	for _, n := range nodes.Items {
@@ -80,7 +77,7 @@ func PollNodes() {
 	}
 
 	if changed(nodeList, tnodes) {
-		glog.Info("Node list changed")
+		log.Println("Node list changed")
 		nodeList = tnodes
 		updateDb()
 	}
@@ -93,7 +90,7 @@ func updateDb() {
 		networks += fmt.Sprintf("%s/32,", k)
 	}
 	networks += *extraIP
-	glog.Infof("Patching sql network: %s", networks)
+	log.Printf("Patching sql network: %s\n", networks)
 	cmd := exec.Command("gcloud", "sql", "instances", "patch", *dbName, "--authorized-networks", networks)
 	var out bytes.Buffer
 	var eout bytes.Buffer
@@ -101,10 +98,10 @@ func updateDb() {
 	cmd.Stderr = &eout
 	err := cmd.Run()
 	if err != nil {
-		glog.Error("Error executing command %v", err)
+		log.Printf("Error executing command %v", err)
 	}
-	log.Infof("Gcloud stdout %s", out.String())
-	log.Infof("Gcloud stderr %s", eout.String())
+	log.Printf("Gcloud stdout %s\n", out.String())
+	log.Printf("Gcloud stderr %s/n", eout.String())
 
 }
 
