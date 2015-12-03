@@ -28,5 +28,5 @@ spec:
         - -db
         - cloudsqldbserver
         - -extra
-        - 10.10.20.114/32
+        - 188.166.20.115/32
 
