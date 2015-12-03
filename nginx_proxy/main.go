@@ -38,11 +38,16 @@ func main() {
 	var cfg *kclient.Config
 	var err error
 
+	// If local flag is provided, will try to connect to the api, throught a
+	// localhost proxy: you can get it up, with the following command:
+	// kubectl proxy, and later launch the script: go run main.go
 	if *local {
 		cfg = &kclient.Config{
 			Host: fmt.Sprintf("http://localhost:8001"),
 		}
 	} else {
+		// This handles incluster config, when the script is runing inside
+		// container, in a k8 cluster.
 		cfg, err = kclient.InClusterConfig()
 		if err != nil {
 			log.Printf("failed to load incluster config %v", err)
@@ -54,6 +59,8 @@ func main() {
 	if err != nil {
 		log.Printf("failed to create client %v", err)
 	}
+	// Query API for services, on the default namespace, matching
+	// label proxy="true"
 	services, err := client.Services("default").List(
 		labels.SelectorFromSet(labels.Set{"proxy": "true"}),
 		fields.Everything(), aclient.ListOptions{})
@@ -62,6 +69,7 @@ func main() {
 	// log.Printf("Name %s", services.Items[0].Name)
 	// log.Printf("Proxy Name %s", services.Items[0].Labels["proxyName"])
 	for _, k := range services.Items {
+		// for every service found, write the desired nginx config file
 		err = writeConfigFile(k.Name, k.Labels["proxyName"])
 		if err != nil {
 			log.Printf("can't write %s config file: %v\n", k.Name, err)
