@@ -90,3 +90,8 @@ Aditional params:
 
 * `-poll` 10s interval seconds for the polling, kube api 
 * `-local` for running it in localhost, using the kubectl -proxy
+
+Aditional links
+===
+A blog post, by @johanhaleby
+http://code.haleby.se/2015/12/04/restrict-google-cloudsql-to-a-kubernetes-cluster/
