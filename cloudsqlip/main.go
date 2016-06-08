@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"time"
+	"strings"
 
 	"github.com/jordic/k8s/cloudsqlip/Godeps/_workspace/src/k8s.io/kubernetes/pkg/api"
 	aclient "github.com/jordic/k8s/cloudsqlip/Godeps/_workspace/src/k8s.io/kubernetes/pkg/api/unversioned"
@@ -15,11 +16,11 @@ import (
 )
 
 var (
-	local        = flag.Bool("local", false, "set to true if running on local machine not within cluster")
-	localPort    = flag.Int("localport", 8001, "port that kubectl proxy is running on (local must be true)")
+	local = flag.Bool("local", false, "set to true if running on local machine not within cluster")
+	localPort = flag.Int("localport", 8001, "port that kubectl proxy is running on (local must be true)")
 	pollInterval = flag.Duration("poll", 10, "Interval in seconds for polling the api to discover new nodes")
-	dbName       = flag.String("db", "", "Db instance to patch ips..")
-	extraIP      = flag.String("extra", "", "Extra ip in the form.. 11.11.11.11/32")
+	dbName = flag.String("db", "", "Db instance to patch ips..")
+	extraIPs = flag.String("extra", "", "Extra ip in the form.. 11.11.11.11/32, 12.12.12.12/32")
 
 	nodeList []string
 	client   *kclient.Client
@@ -58,7 +59,6 @@ func main() {
 			PollNodes()
 		}
 	}
-
 }
 
 // PollNodes polls for new nodes added to cluster
@@ -84,12 +84,22 @@ func PollNodes() {
 
 }
 
-func updateDb() {
-	networks := ""
-	for _, k := range nodeList {
-		networks += fmt.Sprintf("%s/32,", k)
+func toIpString(slice []string) string {
+	temp := ""
+	for _, k := range slice {
+		trimmed := strings.TrimSpace(k)
+		if trimmed != "" {
+			temp += fmt.Sprintf("%s/32,", strings.TrimSpace(k))
+		}
 	}
-	networks += *extraIP
+	return temp
+}
+
+func updateDb() {
+	networks := toIpString(nodeList)
+	extraIpsSlice := strings.Split(*extraIPs, ",")
+	networks += toIpString(extraIpsSlice)
+
 	log.Printf("Patching sql network: %s\n", networks)
 	cmd := exec.Command("gcloud", "sql", "instances", "patch", *dbName, "--authorized-networks", networks)
 	var out bytes.Buffer
